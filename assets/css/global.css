@@ -1,0 +1,91 @@
+.header-wrapper{
+	
+	width: 100%;
+    position: relative;
+    padding: 15px;
+    background-color: #f5f5f5;
+
+}
+
+.header-content{
+	display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+.header-content .logo{
+	width: 15%;
+}
+.header-content .navigation{
+	width: 60%;
+}
+.header-content .navigation ul{
+	list-style: none;
+    display: inline-flex;
+    float: right;
+    margin-top: 30px;
+}
+
+.header-content .navigation ul li{
+	margin-right: 30px;
+}
+.header-content .logo img{
+	height:90px;
+	width:auto;
+}
+.section{
+	margin-top: 30px;
+    padding: 10px;
+}
+.module-wrapper{
+	background-color: #eaeaea;
+}
+.module-wrapper .module-content{
+	display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+.module-content .left-content{
+	width:20%;
+}
+
+.left-content .units{
+	border: solid 1px #000;
+}
+
+.left-content .top-settings select{
+	width:100%;
+}
+.left-content .units .lists-wrapper{
+	padding: 10px;
+}
+
+.lists-wrapper .list-content .unit-name{
+	padding: 10px 0px;
+    border-bottom: solid 1px #000;
+}
+.right-content{
+	width:70%;
+}
+.right-content .top-settings{
+	width: 70%;
+}
+
+.right-content .top-settings .month-name{
+	text-align:center;
+}
+
+.cal-wrapper .cal-content-scroll{
+	overflow: scroll;
+}
+
+.cal-wrapper .cal-content-scroll .cal-days-wrapper{
+	display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    width: 1130px;
+}
+
+.cal-wrapper .cal-content-scroll .cal-days-wrapper .cal-day{
+    padding:0px 10px;
+}

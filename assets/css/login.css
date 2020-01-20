@@ -1,0 +1,40 @@
+.form-wrapper{
+    width: 50%;
+    background-color: #d8d8d8;
+    padding: 30px;
+    margin: auto;
+    -webkit-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+}
+.login-header{
+    width: 80%;
+    margin: auto;
+    border-bottom: solid 1px #9e9e9e;
+    margin-bottom: 30px;
+}
+.login-header h1{
+  font-size: 20pt;
+}
+.login-body{
+    width: 60%;
+    margin: auto;
+}
+.user-input{
+    width: 50%;
+    margin: auto;
+}
+.user-input .form-control{
+    width: 100%;
+}
+.form-group{
+  margin-bottom:20px;
+}
+.user-login-btn{
+    text-align:center;
+    width: 100%;
+    margin: auto;
+}
+.col-sep {
+    text-align: center;
+}
