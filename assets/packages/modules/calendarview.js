@@ -5,7 +5,7 @@ define(['require', 'exports', 'module', 'moment'], function( require, exports, m
 		Vue.component('calendarview', {
 			data : function(){
 				return {
-					month : '',
+					month : ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
 					year : '',
 					days : 0
 				}
@@ -13,7 +13,8 @@ define(['require', 'exports', 'module', 'moment'], function( require, exports, m
 			template : `
 			<div class='cal-wrapper'>
 				<div class='cal-content'>
-					<div class='month-name'>
+					<div class='month-wrapper'>
+						
 						{{month}} - {{getDateDiff}}
 					</div>
 					<div class='cal-content-scroll'>
@@ -26,12 +27,12 @@ define(['require', 'exports', 'module', 'moment'], function( require, exports, m
 			`,
 			props : {
 				start_date : {
-					type : String,
-					default : ''
+					type : Array,
+					default : []
 				},
 				end_date : {
-					type : String,
-					default : ''	
+					type : Array,
+					default : []	
 				}
 			},
 			computed : {

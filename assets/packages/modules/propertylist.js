@@ -1,19 +1,23 @@
 define(['require', 'exports', 'module'], function( require, exports, module ) {
 
 require('calendarview').load();
+var api = require('property-api').property_api();
+var db = require('property-db').property_db();
 
 exports.load = function(){
 
 	Vue.component('propertylist', {
+		inject : ['initIndexDb', 'countRecord'],
 		data : function(){
 			return {
 				id : '',
+				db : '',
 				properties : [],
 				selprop : '',
 				units : [],
 				token : '',
-				start_date : "",
-				end_date : ""
+				start_date : [],
+				end_date : []
 			}
 		},
 		template : `
@@ -49,7 +53,7 @@ exports.load = function(){
 		watch : {
 			properties : function(newVal, oldVal){
 				if(this.properties.length){
-					this.getUnits(this.properties[0]['id'])
+					// this.getUnits(this.properties[0]['id'])
 				}
 			},
 			selprop : function(newVal, oldVal){
@@ -63,71 +67,51 @@ exports.load = function(){
 			},
 			getUnits : function(propId){
 				var units = this.units;
-				axios({
-				  method: 'get',
-				  url: 'https://api.arthuronline.co.uk/v2/properties/'+propId+'/units',
-				  headers : {
-				  	'Authorization' : 'Bearer ' + this.token,
-				  	'X-EntityID' : '17152'
-				  }
-				}).then(function(res){
-					var data = res['data'];
-					console.log(data)
-					if(data['status']){
-						for(var i in data['data']){
-							var obj = {};
-							var a = data['data'][i];
-							obj['id'] = a['id'] 
-							obj['ref'] = a['unit_ref']
-							units.push(obj)
-						}
-					}
+				var obj = api.getUnits(propId);
+				obj(function(res){
+					units.push(res)
 				})
 			},
 			getTenancies : function(unitId){
-				var $this = this
-				axios({
-				  method: 'get',
-				  url: 'https://api.arthuronline.co.uk/v2/units/'+unitId+'/tenancies',
-				  headers : {
-				  	'Authorization' : 'Bearer ' + this.token,
-				  	'X-EntityID' : '17152'
-				  }
-				}).then(function(res){
-					var data = res['data'];
-					if(data['status']){
-						var obj = data['data'][0];
-						$this.start_date = obj['start_date'];
-						$this.end_date = obj['end_date']
-					}
+				var obj = api.getTenancies(unitId);
+				obj(function(res){
+					console.log(res);
 				})
 			}
 		},
 		created : function(){
-			var access = JSON.parse(localStorage.getItem('users_access'));
-			var properties = this.properties;
-			if(access['access_token']){
-				this.token = access['access_token']
-				axios({
-				  method: 'get',
-				  url: 'https://api.arthuronline.co.uk/v2/properties?Property_Type=Mixed',
-				  headers : {
-				  	'Authorization' : 'Bearer ' + this.token,
-				  	'X-EntityID' : '17152'
-				  }
-				}).then(function(res){
-					var data = res['data'];
-					if(data['status']){
-						for(var i in data['data']){
-							var obj = {};
-							var a = data['data'][i];
-							obj['id'] = a['id'] 
-							obj['ref'] = a['ref']
-							properties.push(obj)
-						}
+			var $this = this
+			var initdb = db.init();
+			db.parallel([initdb]).then(function(res){
+				db.database = res[0];
+				var count = db.getCount('properties')
+				db.parallel([count]).then(function(_res){
+					var res_count = _res[0];
+					if(res_count){
+						db.getProperties('properties', function(res){
+							var data = {};
+							var val = res.value;
+							data['id'] = val['id'];
+							data['ref'] = val['ref']
+							$this.properties.push(data);
+						})
+					}
+					else{
+						var props = api.getPropertyList()
+						props(function(res){
+							var data = res['data'];
+							if(data['status']){
+								for(var i in data['data']){
+									var add_db = db.addProperty(data['data'][i]);
+									add_db(function(success){
+										console.log(success)
+									})
+								}
+							}
+						})
 					}
 				});
-			}
+			});
 		}
 
 	})

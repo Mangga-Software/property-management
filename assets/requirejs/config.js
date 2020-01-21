@@ -12,11 +12,13 @@ requirejs.config({
 		'dashboard' : 'dashboard-template',
 		'propertylist' : 'modules/propertylist',
 		'calendarview' : 'modules/calendarview',
+		'property-api' : 'methods/property-api',
+		'property-db' : 'methods/property-db',
 		'app' : 'app'
 	},
 	shim : {
 		propertylist : {
-			deps : ['calendarview'],
+			deps : ['calendarview', 'property-api', 'property-db'],
 			exports : 'propertylist'
 		},
 		dashboard : {

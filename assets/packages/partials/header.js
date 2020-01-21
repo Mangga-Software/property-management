@@ -5,7 +5,7 @@ exports.display = function(){
 	Vue.component('header-template', {
 		template : `<div class='header-wrapper'>
 				<div class='header-content'>
-					<div class='logo'><img src='/manggahomes/static/mangga-logo21.png' /></div>
+					<div class='logo'></div>
 					<div class='navigation'>
 						<ul class='menu'>
 							<li><a><span>Menu 1</span></a></li>

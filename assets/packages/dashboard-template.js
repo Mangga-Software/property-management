@@ -5,8 +5,24 @@ require('propertylist').load();
 
 exports.load = function() {
 	Vue.component('dashboard-template', {
+		inject : ['initIndexDb'],
+		provide : function(){
+			return {
+				countRecord : function(store){
+					var promise = new Promise(function(_res, _err){
+						var count = store.count();
+						count.onsuccess = function() {
+					    	_res(count.result);
+						}
+					})
+					return promise
+				}
+			}
+		},
 		data : function(){
-			return {}
+			return {
+				db : ''
+			}
 		},
 		template : `<div>
 				<header-template></header-template>
@@ -16,6 +32,7 @@ exports.load = function() {
 				</div>`,
 		created : function(){
 
+			
 		}
 	})
 

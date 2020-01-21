@@ -7,7 +7,7 @@ exports.load = function() {
 				<div class="row">
 						<div class="form-wrapper" id="login-form">
 							<div class="form-group">
-								<div class="login-header"><h1>Mangga Property Management</h1></div>
+								<div class="login-header"><h1>Demo Login</h1></div>
 							</div>
 							<div class='login-body'>
 								<div class="form-group">
