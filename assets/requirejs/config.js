@@ -17,6 +17,10 @@ requirejs.config({
 		'app' : 'app'
 	},
 	shim : {
+		calendarview : {
+			deps : ['property-api', 'property-db'],
+			exports : 'calendarview'
+		},
 		propertylist : {
 			deps : ['calendarview', 'property-api', 'property-db'],
 			exports : 'propertylist'

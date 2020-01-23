@@ -68,7 +68,7 @@
 	width:70%;
 }
 .right-content .top-settings{
-	width: 70%;
+	width: 100%;
 }
 
 .right-content .top-settings .month-name{
@@ -88,4 +88,38 @@
 
 .cal-wrapper .cal-content-scroll .cal-days-wrapper .cal-day{
     padding:0px 10px;
+}
+
+.month-wrapper{
+
+}
+
+.month-wrapper .month-name{
+
+}
+
+.month-wrapper .month-name .cal-day{
+	display: table-cell;
+	padding:0px 3px;
+}
+
+.month-wrapper .month-name .cal-day-marker{
+	display: table-cell;
+}
+
+.marker{
+	padding:10px;
+	width:100%;
+}
+
+.marker-current{
+	background-color:#cc0000;	
+}
+
+.marker-approved{
+	background-color:#ffa500;	
+}
+
+.marker-past{
+	background-color:#008000;	
 }

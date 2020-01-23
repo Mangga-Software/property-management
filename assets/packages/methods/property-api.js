@@ -3,8 +3,12 @@ define(['require', 'exports', 'module'], function( require, exports, module ) {
 var entityId = '17152'
 
 function property_api(){
-	var access = JSON.parse(localStorage.getItem('users_access'));
-	var token = access['access_token'];
+	var access = "";
+	var token = "";
+	if(localStorage.getItem('users_access') != null){
+		access = JSON.parse(localStorage.getItem('users_access'));
+		token = access['access_token'];
+	}
 
 	this.getPropertyList = function(){
 		return function(promise){
@@ -16,16 +20,21 @@ function property_api(){
 			  	'X-EntityID' : entityId
 			  }
 			}).then(function(result){
-				promise(result)
+				var data = res['data'];
+				if(data['status']){
+					for(var i in data['data']){
+						promise(data['data'][i]);
+					}
+				}
 			})
 		}
 	}
 
-	this.getUnits = function(propId){
+	this.getAllUnits = function(propId){
 		return function(promise){
 			axios({
 			  method: 'get',
-			  url: 'https://api.arthuronline.co.uk/v2/properties/'+propId+'/units',
+			  url: 'https://api.arthuronline.co.uk/v2/units',
 			  headers : {
 			  	'Authorization' : 'Bearer ' + token,
 			  	'X-EntityID' : '17152'
@@ -34,22 +43,18 @@ function property_api(){
 				var data = res['data'];
 				if(data['status']){
 					for(var i in data['data']){
-						var obj = {};
-						var a = data['data'][i];
-						obj['id'] = a['id'] 
-						obj['ref'] = a['unit_ref']
-						promise(obj);
+						promise(data['data'][i]);
 					}
 				}
 			})
 		}
 	}
 
-	this.getTenancies = function(unitId){
+	this.getAllTenancies = function(unitId){
 		return function(promise){
 			axios({
 			  method: 'get',
-			  url: 'https://api.arthuronline.co.uk/v2/units/'+unitId+'/tenancies',
+			  url: 'https://api.arthuronline.co.uk/v2/tenancies',
 			  headers : {
 			  	'Authorization' : 'Bearer ' + token,
 			  	'X-EntityID' : '17152'
@@ -57,8 +62,9 @@ function property_api(){
 			}).then(function(res){
 				var data = res['data'];
 				if(data['status']){
-					var obj = data['data'][0];
-					promise(obj)
+					for(var i in data['data']){
+						promise(data['data'][i]);
+					}
 				}
 			})
 		}

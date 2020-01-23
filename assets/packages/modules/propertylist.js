@@ -13,8 +13,13 @@ exports.load = function(){
 				id : '',
 				db : '',
 				properties : [],
+				temp_properties : [],
 				selprop : '',
 				units : [],
+				temp_units : [],
+				tenancies : [],
+				temp_tenancies : [],
+				total_units : 0,
 				token : '',
 				start_date : [],
 				end_date : []
@@ -25,93 +30,92 @@ exports.load = function(){
 			<div class="module-content">
 				<div class='left-content'>
 					<div class='top-settings'>
-						<select v-model="selprop">
-							<option v-for="property in properties" v-bind:value="property.id">
-								{{property.ref}}
-							</option>
-						</select>
-					</div>
-					<div class='units'>
-						<div class='lists-wrapper'>
-							<div class='list-content'>
-								 <div class='unit-name' v-for="unit in units">
-									 <a href="javascript:void(0)" v-on:click="getTenancies(unit.id)">
-									 	{{unit.ref}}
-									 </a>
-								 </div>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 				<div class='right-content'>
 					<div class='top-settings'>
-						<calendarview v-bind:start_date="start_date" v-bind:end_date="end_date"></calendarview>
+						<calendarview 
+						v-bind:start_date="start_date" 
+						v-bind:end_date="end_date" 
+						v-bind:total_units="total_units" 
+						v-bind:temp_units="temp_units" 
+						v-bind:tenancies="temp_tenancies"
+						v-bind:properties="properties"
+						v-bind:selprop="selprop"></calendarview>
 					</div>
 				</div>	
 			</div>
 		</div>`,
-		watch : {
-			properties : function(newVal, oldVal){
-				if(this.properties.length){
-					// this.getUnits(this.properties[0]['id'])
-				}
-			},
-			selprop : function(newVal, oldVal){
-				this.units = [];
-				this.getUnits(newVal)
-			}
-		},
 		methods : {
 			selProperties : function(e){
 				console.log(e.target.value)
 			},
-			getUnits : function(propId){
-				var units = this.units;
-				var obj = api.getUnits(propId);
-				obj(function(res){
-					units.push(res)
-				})
-			},
 			getTenancies : function(unitId){
-				var obj = api.getTenancies(unitId);
-				obj(function(res){
-					console.log(res);
-				})
+
 			}
 		},
 		created : function(){
 			var $this = this
 			var initdb = db.init();
-			db.parallel([initdb]).then(function(res){
-				db.database = res[0];
-				var count = db.getCount('properties')
-				db.parallel([count]).then(function(_res){
-					var res_count = _res[0];
-					if(res_count){
-						db.getProperties('properties', function(res){
-							var data = {};
-							var val = res.value;
-							data['id'] = val['id'];
-							data['ref'] = val['ref']
-							$this.properties.push(data);
+			initdb(function(dbres){
+				db.database = dbres;
+				//properties
+				var properties = db.getCountAll('properties')
+				properties(function(count){
+					if(!count){
+						var props = api.getPropertyList()
+						props(function(res){
+							var add_db = db.addData('properties', 'readwrite', res);
+							add_db(function(success){
+								console.log(success)
+							})
 						})
 					}
 					else{
-						var props = api.getPropertyList()
-						props(function(res){
-							var data = res['data'];
-							if(data['status']){
-								for(var i in data['data']){
-									var add_db = db.addProperty(data['data'][i]);
-									add_db(function(success){
-										console.log(success)
-									})
-								}
-							}
+						db.getResults('properties', function(res){
+							$this.properties.push(res.value)
 						})
 					}
-				});
-			});
+				})
+				//units
+				var units = db.getCountAll('units')
+				units(function(count){
+					if(!count){
+						var props = api.getAllUnits()
+						props(function(res){
+							var add_db = db.addData('units', 'readwrite', res);
+							add_db(function(success){
+								console.log(success)
+							})
+						})
+					}else{
+
+						db.getResults('units', function(res){
+							$this.temp_units.push(res.value)
+						})	
+					}
+				})
+
+				var tenants = db.getCountAll('tenancies')
+				tenants(function(count){
+					if(!count){
+						var props = api.getAllTenancies()
+						props(function(res){
+							var add_db = db.addData('tenancies', 'readwrite', res);
+							add_db(function(success){
+								console.log(success)
+							})
+						})
+					}
+					else{
+						db.getResults('tenancies', function(res){
+							$this.temp_tenancies.push(res.value)
+						})	
+					}
+				})
+			})
+			//end db
 		}
 
 	})
