@@ -3,6 +3,9 @@ define(['require', 'exports', 'module'], function( require, exports, module ) {
 function property_db(){
 
 	this.database = "";
+	this.start = 0;
+	this.limit = 0;
+	this.count = 0;
 	var $this = this;
 
 	this.init = function(){
@@ -20,7 +23,7 @@ function property_db(){
          if (!window.indexedDB) {
             window.alert("Your browser doesn't support a stable version of IndexedDB.")
          }
-     	var request = window.indexedDB.open("newDatabase11", 4);
+     	var request = window.indexedDB.open("newDatabase14", 4);
 		
          request.onerror = function(event) {
             console.log("error: ");

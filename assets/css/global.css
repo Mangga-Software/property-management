@@ -65,7 +65,7 @@
     border-bottom: solid 1px #000;
 }
 .right-content{
-	width:70%;
+	width:100%;
 }
 .right-content .top-settings{
 	width: 100%;
@@ -73,10 +73,37 @@
 
 .right-content .top-settings .month-name{
 	text-align:center;
+	border: solid 1px #000;
 }
 
-.cal-wrapper .cal-content-scroll{
-	overflow: scroll;
+.cal-wrapper{
+    overflow-y: auto;
+    height: 400px;
+}
+
+.cal-wrapper .cal-content{
+	display:flex;
+	flex-wrap:wrap;
+	height:400px;
+}
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+
+.cal-wrapper .cal-content .cal-content-left{
+	width: 17%;
+}
+
+.cal-wrapper .cal-content .cal-content-right{
+	width: 80%;
+    overflow: auto;
 }
 
 .cal-wrapper .cal-content-scroll .cal-days-wrapper{
@@ -107,9 +134,52 @@
 	display: table-cell;
 }
 
-.marker{
+.month-days td{
+	padding: 0px 10px;
+	border: solid 1px #000;
+}
+
+.day-border{
+	border-left: solid 1px #000;
+    border-top: solid 1px #000;
+}
+
+
+.unit-row td:first-child, .month-days td:first-child{
+	visibility: hidden;
+}
+
+.unit-row td{
+
+}
+
+.unit-lists tr:first-child td:first-child{
+	visibility: hidden;
+}
+
+.unit-name{
+    border-bottom: solid 1px #000;
+    padding: 10px;
+}
+
+.unit-name-hidden{
 	padding:10px;
+}
+
+.unit-name-div{
+	width: 170px
+}
+
+.marker{
+	padding:15px;
 	width:100%;
+	position:relative;
+}
+
+.marker span{
+	position:absolute;
+	top: 0px;
+    left: 10px;
 }
 
 .marker-current{
@@ -122,4 +192,32 @@
 
 .marker-past{
 	background-color:#008000;	
+}
+
+.tooltip-wrapper{
+	width: 190px;
+    background-color: #08d408;
+    padding: 5px;
+}
+
+.tooltip-wrapper .tooltip-content{
+	padding: 5px;
+    background-color: white;
+}
+
+.tooltip-details{
+	font-size:14px;
+}
+
+.adjust-left-top {
+    height: 24px;
+}
+
+.left-selection tr td div{
+	height: 24px
+}
+
+.unit-lists tr td div.adjust-first-col{
+	padding: 10px;
+    height: 43px;
 }
