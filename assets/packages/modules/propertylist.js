@@ -14,12 +14,14 @@ exports.load = function(){
 				db : '',
 				properties : [],
 				temp_properties : [],
-				selprop : '',
-				units : [],
-				temp_units : [],
-				tenancies : [],
 				temp_tenancies : [],
 				total_units : 0,
+				selprop : '',
+				units : [],
+				unit_page : 1,
+				tenant_page : 1,
+				temp_units : [],
+				tenancies : [],
 				token : '',
 				start_date : [],
 				end_date : []
@@ -66,9 +68,10 @@ exports.load = function(){
 					if(!count){
 						var props = api.getPropertyList()
 						props(function(res){
+							$this.properties.push(res)
 							var add_db = db.addData('properties', 'readwrite', res);
 							add_db(function(success){
-								console.log(success)
+								// console.log(success)
 							})
 						})
 					}
@@ -82,15 +85,26 @@ exports.load = function(){
 				var units = db.getCountAll('units')
 				units(function(count){
 					if(!count){
-						var props = api.getAllUnits()
+						var props = api.getAllUnits($this.unit_page)
 						props(function(res){
-							var add_db = db.addData('units', 'readwrite', res);
-							add_db(function(success){
-								console.log(success)
-							})
+							var lists = res.lists;
+							var page = res.pagination
+							for( var i = $this.unit_page; i <= page.pageCount; i++){
+								props = api.getAllUnits($this.unit_page)
+								props(function(res){
+									var _lists = res.lists;
+									for(var a in _lists){
+										var add_db = db.addData('units', 'readwrite', _lists[a]);
+										add_db(function(success){
+											console.log(success)
+										})
+										$this.temp_units.push(_lists[a])
+									}
+								})
+								$this.unit_page++;
+							}
 						})
 					}else{
-
 						db.getResults('units', function(res){
 							$this.temp_units.push(res.value)
 						})	
@@ -100,12 +114,24 @@ exports.load = function(){
 				var tenants = db.getCountAll('tenancies')
 				tenants(function(count){
 					if(!count){
-						var props = api.getAllTenancies()
+						var props = api.getAllTenancies($this.tenant_page)
 						props(function(res){
-							var add_db = db.addData('tenancies', 'readwrite', res);
-							add_db(function(success){
-								console.log(success)
-							})
+							var lists = res.lists;
+							var page = res.pagination
+							for( var i = $this.tenant_page; i <= page.pageCount; i++){
+								props = api.getAllTenancies($this.tenant_page)
+								props(function(res){
+									var _lists = res.lists;
+									for(var a in _lists){
+										var add_db = db.addData('tenancies', 'readwrite', _lists[a]);
+										add_db(function(success){
+											// console.log(success)
+										})
+										$this.temp_tenancies.push(_lists[a])
+									}
+								})
+								$this.tenant_page++;
+							}
 						})
 					}
 					else{

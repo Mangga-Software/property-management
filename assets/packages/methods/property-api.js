@@ -19,26 +19,6 @@ function property_api(){
 			  	'Authorization' : 'Bearer ' + token,
 			  	'X-EntityID' : entityId
 			  }
-			}).then(function(result){
-				var data = res['data'];
-				if(data['status']){
-					for(var i in data['data']){
-						promise(data['data'][i]);
-					}
-				}
-			})
-		}
-	}
-
-	this.getAllUnits = function(propId){
-		return function(promise){
-			axios({
-			  method: 'get',
-			  url: 'https://api.arthuronline.co.uk/v2/units',
-			  headers : {
-			  	'Authorization' : 'Bearer ' + token,
-			  	'X-EntityID' : '17152'
-			  }
 			}).then(function(res){
 				var data = res['data'];
 				if(data['status']){
@@ -50,21 +30,76 @@ function property_api(){
 		}
 	}
 
-	this.getAllTenancies = function(unitId){
+	this.getAllUnits = function(pageNumber){
 		return function(promise){
 			axios({
 			  method: 'get',
-			  url: 'https://api.arthuronline.co.uk/v2/tenancies',
+			  url: 'https://api.arthuronline.co.uk/v2/units?page='+pageNumber,
 			  headers : {
 			  	'Authorization' : 'Bearer ' + token,
 			  	'X-EntityID' : '17152'
 			  }
 			}).then(function(res){
 				var data = res['data'];
+				result = {
+					lists : [],
+					pagination : {}
+				}
 				if(data['status']){
-					for(var i in data['data']){
-						promise(data['data'][i]);
-					}
+					result.lists = data['data']
+					result.pagination = data['pagination'];
+					promise(result)
+				}
+			})
+		}
+	}
+
+	this.getPropUnits = function(propId, pageNumber){
+		return function(promise){
+			axios({
+			  method: 'get',
+			  url: 'https://api.arthuronline.co.uk/v2/properties/'+propId+'/units/?page='+pageNumber,
+			  headers : {
+			  	'Authorization' : 'Bearer ' + token,
+			  	'X-EntityID' : '17152'
+			  }
+			}).then(function(res){
+				var data = res['data'];
+				var data_list = []
+				var pagination = data['pagination'];
+				var result = {
+					lists : [],
+					pagination : {}
+				}
+				if(data['status']){
+					result.lists = data['data']
+					result.pagination = pagination
+					promise(result)
+				}
+			})
+		}
+	}
+
+
+	this.getAllTenancies = function(pageNumber){
+		return function(promise){
+			axios({
+			  method: 'get',
+			  url: 'https://api.arthuronline.co.uk/v2/tenancies?page='+pageNumber,
+			  headers : {
+			  	'Authorization' : 'Bearer ' + token,
+			  	'X-EntityID' : '17152'
+			  }
+			}).then(function(res){
+				var data = res['data'];
+				result = {
+					lists : [],
+					pagination : {}
+				}
+				if(data['status']){
+					result.lists = data['data']
+					result.pagination = data['pagination'];
+					promise(result)
 				}
 			})
 		}

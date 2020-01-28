@@ -2,46 +2,98 @@ define(['require', 'exports', 'module', 'moment'], function( require, exports, m
 
 var api = require('property-api').property_api();
 var db = require('property-db').property_db();
-
+var tooltip = require('tooltipdetails').load();
+var unitlists = require('unitlists').load();
+var unitinfos = require('unitinfos').load();
+var scroller = require('scroller').load();
+var vscroller = require('vscroller').load();
 	exports.load = function(){
 
 		Vue.component('calendarview', {
 			data : function(){
 				return {
 					units : [],
-					months : ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
-					year : '',
+					months : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
 					days : 0,
+					current_year : 0,
 					print_unit : true,
-					marker_type : 'current'
+					marker_type : 'current',
+					is_hover : false,
+					posX : 0,
+					posY : 0,
+					scrollX : 0,
+					tenant_id : 0,
+					property_id : 0
 				}
 			},
 			template : `
 			<div class='cal-wrapper'>
 				<div class='cal-content'>
-					<div class="cal-content-scroll">
-						<table class='month-wrapper'>
-							<tr>
-								<td><select v-model="selprop">
-									<option v-for="property in properties" v-bind:value="property.id">
-										{{property.ref}}
-									</option>
-								</select>
-								</td>
-								<td class='month-name' v-for="(month, index) in months" v-bind:colspan="getMaxDays(index)">{{month}}</td>
-							</tr>
+					<div class='cal-content-row'>
+						<div class="cal-content-left">
+							<div class='top-selection-props'>
+								<table class='month-wrapper left-selection'>
+									<tr><td><div class='adjust-left-top'></div></tr>
+									<tr>
+										<td>
+										<select v-model="selprop">
+											<option v-for="property in properties" v-bind:value="property.id">
+												{{property.ref}}
+											</option>
+										</select>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+						<div class="cal-content-right">
+							<table class='month-wrapper date-list' id="month-lists">
 							<tr>
 								<td></td>
-								<td v-for="(day, index) in getDaysMonth()">{{day}}</td>
-							</tr>
-							<tr v-for="unit in getUnitsAvail">
-								<td>{{unit.unit_name}}</td>
-								<td v-for="day in unit['days']" v-bind:colspan="day.total_span">
-									<div v-if="day.is_start" v-bind:class="'marker marker-'+day.marker">{{day.marker}}</div>
-								</td>
-							</tr>
-						</table>	
+									<td class='month-name' v-for="(month, index) in months" v-bind:colspan="getMaxDays(index)">{{month + ' ' + current_year}}</td>
+								</tr>
+								<tr class="month-days">
+									<td><div class='adjust-top-month'></div></td>
+									<td v-for="(day, index) in getDaysMonth()">{{day}}</td>
+								</tr>
+							</table>
+						</div>
 					</div>
+					<div class='cal-content-row  content-scroll'>
+						<div class="cal-content-left">
+							<div id="scroll-unit-lists">
+								<table>
+								<tbody>
+								<tr v-for="(unit, index) in units">
+									<unit-lists v-bind:unit="unit"></unit-lists>
+								</tr>
+								</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="cal-content-right">
+							<table class='month-wrapper unit-lists' id="cal-lists">
+								<tr class="month-days">
+									<td><div class='adjust-top-month'></div></td>
+									<td v-for="(day, index) in getDaysMonth()" class='hide-date'>{{day}}</td>
+								</tr>
+								<tr class='unit-row' v-for="(unit, index) in units">
+									<td><div class='adjust-first-col'></div></td>
+									<td v-for="info in unit['days']" 
+									v-bind:colspan="info.total_span" class='day-border'>
+										<unit-infos v-bind:info="info" 
+										v-bind:hoverInfo="getDetailsHover"
+										v-bind:Unhover="getUnHover"></unit-infos>
+									</td>
+								</tr>
+							</table>
+							<scroller></scroller>
+							
+						</div>
+					</div>
+				</div>
+				<div v-if="is_hover" :style="'position:absolute;top:'+posY+'px;left:'+posX+'px;z-index:99999;'">
+					<tooltipdetails v-bind:tenancies="tenancies" v-bind:tenant_id="tenant_id"></tooltipdetails>
 				</div>
 			</div>
 			`,
@@ -75,17 +127,30 @@ var db = require('property-db').property_db();
 				selprop : function(newVal, oldVal){
 					this.units = [];
 					this.getUnits(newVal)
+					this.property_id = newVal
+				},
+				scrollX : function(newVal, oldVal){
+					console.log(newVal)
 				}
 			},
 			methods : {
+				getDetailsHover : function(e){
+					this.is_hover = true
+					this.posX = e.pageX
+					this.posY = e.target.getBoundingClientRect().top + (window.scrollY + 30)
+					this.tenant_id = e.target.getAttribute("data-id")
+				},
+				getUnHover : function(e){
+					this.is_hover = false					
+				},
 				getUnits : function(propId){
 					var $this = this
 					var units = $this.temp_units;
 					for(var i in units){
-							if(units[i].property_id == propId){
-								$this.units.push(units[i])
-							}
+						if(units[i].property_id == propId){
+							$this.units.push($this.format_unit(units[i]))
 						}
+					}
 				},
 				getMaxDays : function(month){
 					return moment().month(month).daysInMonth()
@@ -130,70 +195,107 @@ var db = require('property-db').property_db();
 						else if(tenants[i].status == "Past"){
 							marker = 'past'
 						}
-						if(tenants[i].unit_id == unit.id && tenants[i].start_date != ""){
-							var date = moment(tenants[i].start_date);
+						if(tenants[i].unit_id == unit.id && tenants[i].end_date != "" && tenants[i].status != "Past"){
+							var date = moment(tenants[i].end_date);
 							var _mon = date.get("month");
 							var _day = date.get("date");
-							if(_mon == month && _day == day){
+							var _yr = date.get("year")
+							if(_mon == month && _day == day && _yr == moment().get('year')){
 								var diff = this.getDateDiff(tenants[i].start_date, tenants[i].end_date)
 								var data = {
 									diff : diff,
-									marker : marker
+									marker : marker,
+									tenant_id : tenants[i].id,
+									tenant_name : tenants[i].tenants,
+									start_date : tenants[i].start_date,
+									end_date : tenants[i].end_date,
+									status : tenants[i].status
 								}
 								return data;
 							}
 						}
 					}
 					return false
+				},
+				filter_yrstart : function(data){
+					var days = data['days']
+					var has_start = false;
+					var total_days = 0;
+					
+					for(var i in this.months){
+						var day_in_year = moment([2019, i]).daysInMonth();
+						total_days += day_in_year
+					}
+
+					var prev_yrs = days.splice(0, total_days);
+					for(var i in prev_yrs){
+						// console.log(prev_yrs[i])
+					}
+					return data
+
+				},
+				format_unit : function(unit){
+					var data = {}
+					data['unit_id'] = unit.id
+					data['unit_name'] = unit.unit_ref
+					data['days'] = [];
+					var count_diff = 0
+					var yr = moment().get('year')
+					for(var b in this.months){
+						var max_days = moment([yr, b]).daysInMonth()
+						for(var c = 1; c <= max_days; c++ ){
+							if(count_diff > 1){
+								count_diff--;
+								continue;
+							}else{
+								count_diff = 0
+							}
+
+							var has_start = {
+								is_start : false,
+								total_span : 0,
+								marker : '',
+								day : c,
+								tenant_id : 0,
+								tenant_name : []
+							};
+
+							if(this.getTenancyDate(b, c, unit)){
+								var tenant = this.getTenancyDate(b, c, unit);
+								var days_length = data['days'].length
+								if(tenant.diff > days_length){
+									data['days'][0].is_start = true
+									data['days'][0].total_span = days_length
+									data['days'][0].marker = tenant.marker
+									data['days'][0].tenant_name = tenant.tenant_name
+									data['days'][0].tenant_id = tenant.tenant_id
+									data['days'].splice(1, days_length - 1)
+								}
+								else if(tenant.diff < days_length){
+									has_start.is_start = true
+									has_start.total_span = tenant.diff
+									has_start.marker = tenant.marker
+									has_start.tenant_name = tenant.tenant_name
+									has_start.tenant_id = tenant.tenant_id
+									data['days'].splice(days_length - tenant.diff, tenant.diff - 1)
+								}
+
+							}
+
+							data['days'].push(has_start)
+						}
+					}
+					return data
 				}
 			},
 			computed : {
-				getUnitsAvail : function(){
-					var obj = [];
-					if(this.units.length){
-						for(var a in this.units){
-							var data = {}
-							data['unit_id'] = this.units[a].id
-							data['unit_name'] = this.units[a].unit_ref
-							data['days'] = [];
-							data['has_start'] = [];
-							for(var b in this.months){
-								var max_days = moment().month(b).daysInMonth()
-								for(var c = 1; c <= max_days; c++ ){
-									
-									var has_start = {
-										is_start : false,
-										total_span : 0,
-										marker : '',
-										day : c
-									};
 
-									if(this.getTenancyDate(b, c, this.units[a])){
-										var tenant = this.getTenancyDate(b, c, this.units[a]);
-										has_start.is_start = true
-										has_start.total_span = tenant.diff
-										has_start.marker = tenant.marker
-									}
-
-									data['days'].push(has_start)
-								}
-							}
-							obj.push(data)
-						}
-					}
-					return obj
-				}
 			},
 			beforeUpdate : function(){
-				var tenants = this.tenancies
-				for(var i in tenants){
-					// console.log(tenants[i].status)
-					if(tenants[i].status == "Current"){
-						console.log(tenants[i])
-					}
-				}
+				// console.log(this.units)
 			},
 			created : function(){
+				this.current_year = moment().get('year')
 				var initdb = db.init();
 				initdb(function(dbres){
 					db.database = dbres
